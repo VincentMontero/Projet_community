@@ -6,7 +6,7 @@ from crowd_utils import find_single, find_all_link_by_class, get_database, df_to
 
 """ USEFUL CONSTANTS """
 URL = "https://www.irena.org/News"
-COLUMNS = ["Titre", "Body", "Date de création", "URL source", "ID_airtable"]
+COLUMNS = ["Titre", "Body", "Date de création", "URL source", "ID_airtable", "Résumé"]
 
 """ Get wanted data from the dictionnary and insert it in the dataframe """
 def stock_company_data(df, dico):
@@ -36,6 +36,9 @@ def get_company_data(url, table, collection, df):
         dico["ID_airtable"] = dico_air['id']
         collection.insert_one(dico) # Mongo
         update_airtable_cell(table, dico["ID_airtable"], "ID_airtable", dico["ID_airtable"])
+        
+        dico["Résumé"] = "Temporary value"
+        update_airtable_cell(table, dico["ID_airtable"], "Résumé", dico["Résumé"])
         return stock_company_data(df, dico)
 
     except requests.exceptions.RequestException as e:
@@ -46,9 +49,9 @@ def scraping_irena():
     df = pd.DataFrame(columns = COLUMNS)
     db = get_database("Classification_articles")
     collection = db["Irena"]
-    collection.delete_many({})
-    old_df = get_collection_df(collection)
+    collection.delete_many({}) ## to_comment
     
+    old_df = get_collection_df(collection)
     table = get_airtable('appHREIqHIs32toy0', 'tblBtE2Zm7mmF7lSm')
     
     res = requests.get(URL)
@@ -73,5 +76,5 @@ def scraping_irena():
 if __name__ == "__main__":
     df = scraping_irena()
 
-    df.to_csv("./scraping_irena.csv", index=False)
+    df.to_csv("./CSV/scraping_irena.csv", index=False)
     print("scraping finished")

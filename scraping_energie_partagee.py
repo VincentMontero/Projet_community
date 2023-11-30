@@ -1,14 +1,13 @@
 from bs4 import BeautifulSoup
 import pandas as pd
 import requests
-from time import sleep
 
 from crowd_utils import find_single, make_printable, find_all, find_all_link_by_class, get_database, df_to_db, get_airtable, get_collection_df, check_src_in_df, update_airtable_cell
 
 """ USEFUL CONSTANTS """
 URL = "https://energie-partagee.org/decouvrir/avec-nous/espace-presse/page/PAGE_ID/"
 COOKIE_ID = "/html/body/div[1]/div/div[6]/button[1]"
-COLUMNS = ["Titre", "Description", "Body", "Date de création", "URL source", "ID_airtable"]
+COLUMNS = ["Titre", "Description", "Body", "Date de création", "URL source", "ID_airtable", "Résumé"]
 
 """ Get wanted data from the dictionnary and insert it in the dataframe """
 def stock_company_data(df, dico):
@@ -39,8 +38,10 @@ def get_company_data(url, table, collection, df):
         dico_air = table.create(dico) # Airtable
         dico["ID_airtable"] = dico_air['id']
         collection.insert_one(dico) # Mongo
-        sleep(1)
         update_airtable_cell(table, dico["ID_airtable"], "ID_airtable", dico["ID_airtable"])
+        
+        dico["Résumé"] = "Temporary value"
+        update_airtable_cell(table, dico["ID_airtable"], "Résumé", dico["Résumé"])
         return stock_company_data(df, dico)
 
     except requests.exceptions.RequestException as e:
@@ -51,9 +52,9 @@ def scraping_energie_partagee():
     df = pd.DataFrame(columns = COLUMNS)
     db = get_database("Classification_articles")
     collection = db["energie_partagee"]
-    collection.delete_many({})
-    old_df = get_collection_df(collection)
+    collection.delete_many({}) ## to_comment
     
+    old_df = get_collection_df(collection)
     table = get_airtable('appHREIqHIs32toy0', 'tblzWMjPtqbsDWlm5')
     
     i = 1
@@ -89,5 +90,5 @@ if __name__ == "__main__":
     #df = pd.DataFrame(columns = COLUMNS)
     df = scraping_energie_partagee()
 
-    df.to_csv("./scraping_energie_partagee.csv", index=False)
+    df.to_csv("./CSV/scraping_energie_partagee.csv", index=False)
     print("scraping finished")

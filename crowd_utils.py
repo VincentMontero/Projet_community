@@ -193,6 +193,7 @@ def df_to_db(df, collection):
     
 def df_to_airtable(df, table):
     df.fillna("No value", inplace=True)
+
     dico_table = df.to_dict('records')
     table.batch_create(dico_table)
 

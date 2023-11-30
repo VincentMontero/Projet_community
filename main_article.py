@@ -19,6 +19,10 @@ replace_words = {
     "the": "le",
     "to": "à",
     "if": "si",
+    "also": "aussi",
+    "year": "année",
+    "will": "va",
+    "be": "être",
 }
 
 def replace_words_in_text(text, replace_words):
@@ -35,22 +39,24 @@ if __name__ == '__main__':
         pass
     try:
         L.append(scraping_irena())
-    except:
+    except Exception as e:
+        print(e)
         pass
     try:
         L.append(scraping_neozone())
-    except:
+    except Exception as e:
+        print(e)
         pass
     df = pd.concat(L)
 
     """ END OF SCRAPING, INPUTING DF INTO AIRTABLE AND MONGO"""
     table = get_airtable('appHREIqHIs32toy0', 'tblvM3eejH1sjlraT')
-    df_to_airtable(df, table)
-    # df.to_csv("All_articles.csv", index=False)
+    # df_to_airtable(df, table)
+    # df.to_csv("./CSV/All_articles.csv", index=False)
     
     db = get_database("Classification_articles")
     collection = db["All articles"]
-    collection.delete_many({})
+    collection.delete_many({}) ## to comment
     
     try:
         df_to_db(df, collection)
@@ -83,16 +89,16 @@ if __name__ == '__main__':
         
         article_summary = replace_words_in_text(article_summary, replace_words)
         print(f"INDEX: {i}\nNew summary: {article_summary}"), print("")
-        all_summaries.append({'Titre': titre_list[i], 'summary_text': article_summary,
-                              'URL source': URL_list[i], 'ID_airtable': row_id_list[i]})
-
-        update_airtable_cell(table, row_id_list[i], "Résumé", article_summary) ## Update airtable's cell
+        dico_summary = {'Titre': titre_list[i], 'summary_text': article_summary,
+                              'URL source': URL_list[i], 'ID_airtable': row_id_list[i]}
+        all_summaries.append(dico_summary)
+        
+        table.create(dico_summary)
     
     circle_df = pd.DataFrame(all_summaries)
-    circle_df.to_csv("./Résumé_articles.csv", index=False)
+    # df_to_airtable(circle_df, table) ## Retirer table.create(dico_summary) si on veut tout rentrer d'un coup
+    circle_df.to_csv("./CSV/Résumé_articles.csv", index=False)
     ##NE PAS OUBLIER DE RETIRER LES COLLECTION.delete_many({})
-    
-    ## mettre les summaries dans la section résumé
 
     ## Il faut récupérer les df qui stockent aussi dans mongoDB tous les articles, ensuite on résume les articles et on envoie cela sur Airtable, un status sera ensuite assigné à la main pour dire s'il est validé ou non.
     ## Pour ça, j'ai besoin de l'id des cases pour pouvoir vérifier s'il y a un résumé, s'il n'y en a pas, le faire, l'envoyer sur Airtable et voilà. Ensuite quand le résumé sera validé, il faudra voir pour le récupérer, l'envoyer sur Circle sous la forme Titre de base + Résumé + URL de l'article de base + (Optionel) tags

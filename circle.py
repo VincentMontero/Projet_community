@@ -157,10 +157,10 @@ if __name__ == '__main__':
 
     space_list = get_all_spaces(community_id)
     print(space_list), print('\n')
-    space_rooms = get_value(get_single_space(community_id, space_list[1]), "space_order_array") #salons à l'intérieur d'un space
+    space_rooms = get_value(get_single_space(community_id, space_list[2]), "space_order_array") #salons à l'intérieur d'un space
     print(space_rooms), print('\n')
-    get_all_posts(community_id, space_rooms[1]) #le com_id est pas check
-    get_comment(community_id, space_rooms[1]), print('\n')
+    # get_all_posts(community_id, space_rooms[1]) #le com_id est pas check
+    # get_comment(community_id, space_rooms[1]), print('\n')
     page_number = 1
     while get_all_members(30, page_number):
         page_number += 1

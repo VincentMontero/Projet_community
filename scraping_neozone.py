@@ -50,6 +50,8 @@ def get_company_data(url, table, collection, df):
             dico["ID_airtable"] = dico_air['id']
             update_airtable_cell(table, dico["ID_airtable"], "ID_airtable", dico["ID_airtable"])
             collection.insert_one(dico) # Mongo
+        dico["Résumé"] = "Temporary value"
+        update_airtable_cell(table, dico["ID_airtable"], "Résumé", dico["Résumé"])
         return stock_company_data(df, dico)
 
     except requests.exceptions.RequestException as e:
@@ -60,7 +62,7 @@ def scraping_neozone():
     df = pd.DataFrame(columns = COLUMNS)
     db = get_database("Classification_articles")
     collection = db["Neozone"]
-    collection.delete_many({})
+    collection.delete_many({}) ## to_comment
 
     old_df = get_collection_df(collection)
     
@@ -86,5 +88,5 @@ if __name__ == "__main__":
     df = scraping_neozone()
     ##table.all() = liste de dictionnaires
     ##table.update('recDzhHBQDgDJk4kl', {'Résumé': 'Test'})
-    df.to_csv("./scraping_neozone.csv", index=False)
+    df.to_csv("./CSV/scraping_neozone.csv", index=False)
     print("scraping finished")
